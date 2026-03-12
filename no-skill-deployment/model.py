@@ -1,31 +1,32 @@
-import torch
-import torch.nn as nn
-import tarfile
-import os
+"""
+Train and save a simple scikit-learn model artifact for Databricks deployment.
+Saves the model in MLflow format, which Databricks Model Serving expects.
+"""
 
-class DummyModel(nn.Module):
-    def __init__(self):
-        super(DummyModel, self).__init__()
-        self.fc = nn.Linear(10, 1)
+import mlflow.sklearn
+from sklearn.datasets import load_iris
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
 
-    def forward(self, x):
-        return self.fc(x)
+MODEL_PATH = "iris_rf_model"
 
 
-def save_model():
-    model = DummyModel()
-    model.eval()
+def train_and_save():
+    data = load_iris()
+    X, y = data.data, data.target
 
-    os.makedirs("model_artifacts", exist_ok=True)
-    model_path = "model_artifacts/model.pth"
-    torch.save(model.state_dict(), model_path)
-    print(f"Model saved to {model_path}")
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    # SageMaker expects model artifacts as model.tar.gz
-    with tarfile.open("model.tar.gz", "w:gz") as tar:
-        tar.add(model_path, arcname="model.pth")
-    print("Model serialized to model.tar.gz")
+    model = RandomForestClassifier(n_estimators=100, random_state=42)
+    model.fit(X_train, y_train)
+
+    accuracy = accuracy_score(y_test, model.predict(X_test))
+    print(f"Model accuracy: {accuracy:.4f}")
+
+    mlflow.sklearn.save_model(model, MODEL_PATH)
+    print(f"Model artifact saved to: {MODEL_PATH}/")
 
 
 if __name__ == "__main__":
-    save_model()
+    train_and_save()
