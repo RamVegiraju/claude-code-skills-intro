@@ -1,5 +1,7 @@
 # skill-sample
 
+## [Video/Guide](https://www.youtube.com/watch?v=oLSqUqm7jqI)
+
 This repo compares two ways to deploy an ML model to a Databricks Model Serving endpoint:
 
 - `claude-first-skill/`: workflow with a Claude Code skill (`databricks-model-serving-ep`) guiding the deployment path.
